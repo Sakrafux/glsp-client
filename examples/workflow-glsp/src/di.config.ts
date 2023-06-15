@@ -19,7 +19,6 @@ import {
     configureModelElement,
     ConsoleLogger,
     DeleteElementContextMenuItemProvider,
-    DiamondNodeView,
     editLabelFeature,
     GEdge,
     glspAccessibilityModule,
@@ -44,6 +43,7 @@ import 'balloon-css/balloon.min.css';
 import { Container, ContainerModule } from 'inversify';
 import 'sprotty/css/edit-label.css';
 import '../css/diagram.css';
+import { CustomShape } from './custom-view';
 import { directTaskEditor } from './direct-task-editing/di.config';
 import { ActivityNode, CategoryNode, Icon, TaskNode, WeightedEdge } from './model';
 import { IconView, WorkflowEdgeView } from './workflow-views';
@@ -67,8 +67,8 @@ export const workflowDiagramModule = new ContainerModule((bind, unbind, isBound,
     configureModelElement(context, DefaultTypes.EDGE, GEdge, WorkflowEdgeView);
     configureModelElement(context, 'edge:weighted', WeightedEdge, WorkflowEdgeView);
     configureModelElement(context, 'icon', Icon, IconView);
-    configureModelElement(context, 'activityNode:merge', ActivityNode, DiamondNodeView);
-    configureModelElement(context, 'activityNode:decision', ActivityNode, DiamondNodeView);
+    configureModelElement(context, 'activityNode:merge', ActivityNode, CustomShape);
+    configureModelElement(context, 'activityNode:decision', ActivityNode, CustomShape);
     configureModelElement(context, 'activityNode:fork', ActivityNode, RectangularNodeView);
     configureModelElement(context, 'activityNode:join', ActivityNode, RectangularNodeView);
     configureModelElement(context, DefaultTypes.GRAPH, GLSPGraph, GLSPProjectionView);
