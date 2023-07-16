@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { ContainerModule } from 'inversify';
 import { ContextMenuProviderRegistry, IContextMenuService, TYPES, bindAsService } from '~glsp-sprotty';
-import { SelectionServiceAwareContextMenuMouseListener } from './selection-service-aware-context-menu-mouse-listener';
+import { ContextMenuTool } from './context-menu-tool';
 import { ServerContextMenuItemProvider } from './server-context-menu-provider';
 
 export const contextMenuModule = new ContainerModule(bind => {
@@ -29,7 +29,8 @@ export const contextMenuModule = new ContainerModule(bind => {
                 }
             })
     );
-    bindAsService(bind, TYPES.MouseListener, SelectionServiceAwareContextMenuMouseListener);
+
+    bindAsService(bind, TYPES.IDefaultTool, ContextMenuTool);
     bind(TYPES.IContextMenuProviderRegistry).to(ContextMenuProviderRegistry);
     bindAsService(bind, TYPES.IContextMenuItemProvider, ServerContextMenuItemProvider);
 });

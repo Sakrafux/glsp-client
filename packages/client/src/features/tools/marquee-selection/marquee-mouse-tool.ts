@@ -43,10 +43,19 @@ export class MarqueeMouseTool extends BaseGLSPTool {
     @inject(TYPES.DOMHelper) protected domHelper: DOMHelper;
     @inject(TYPES.IMarqueeBehavior) @optional() protected marqueeBehavior: IMarqueeBehavior;
 
-    protected shiftKeyListener: ShiftKeyListener = new ShiftKeyListener();
+    protected shiftKeyListener: ShiftKeyListener;
+
+    constructor() {
+        super();
+        this.shiftKeyListener = this.createShiftKeyListener();
+    }
 
     get id(): string {
         return MarqueeMouseTool.ID;
+    }
+
+    override get isEditTool(): boolean {
+        return false;
     }
 
     enable(): void {
@@ -55,6 +64,10 @@ export class MarqueeMouseTool extends BaseGLSPTool {
             this.keyTool.registerListener(this.shiftKeyListener),
             this.registerFeedback([cursorFeedbackAction(CursorCSS.MARQUEE)], this, [cursorFeedbackAction()])
         );
+    }
+
+    protected createShiftKeyListener(): KeyListener {
+        return new ShiftKeyListener();
     }
 }
 

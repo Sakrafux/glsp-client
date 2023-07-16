@@ -24,7 +24,6 @@ export const TYPES = {
     IAsyncClipboardService: Symbol('IAsyncClipboardService'),
     IEditorContextServiceProvider: Symbol('IEditorContextProvider'),
     IFeedbackActionDispatcher: Symbol('IFeedbackActionDispatcher'),
-    IToolFactory: Symbol('Factory<Tool>'),
     ITypeHintProvider: Symbol('ITypeHintProvider'),
     IMovementRestrictor: Symbol('IMovementRestrictor'),
     ISelectionListener: Symbol('ISelectionListener'),

@@ -28,6 +28,10 @@ export class MarqueeTool extends BaseGLSPTool {
         return MarqueeTool.ID;
     }
 
+    override get isEditTool(): boolean {
+        return false;
+    }
+
     enable(): void {
         this.toDisposeOnDisable.push(this.keyTool.registerListener(this.marqueeKeyListener));
     }

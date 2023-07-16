@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2023 EclipseSource and others.
+ * Copyright (c) 2023 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,33 +14,34 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { injectable } from 'inversify';
-import { CommandPaletteKeyListener, KeyListener } from '~glsp-sprotty';
-import { BaseGLSPTool } from '../..';
+import { MouseListener } from '~glsp-sprotty';
+import { BaseGLSPTool } from '../tools/base-glsp-tool';
+import { GLSPContextMenuMouseListener } from './context-menu-mouse-listener';
 
 @injectable()
-export class CommandPaletteTool extends BaseGLSPTool {
-    static ID = 'glsp.command-palette-tool';
+export class ContextMenuTool extends BaseGLSPTool {
+    static readonly ID = 'glsp.context-menu-tool';
 
-    protected commandPaletteKeyListener: KeyListener;
+    protected contextMenuMouseListener: MouseListener;
 
     constructor() {
         super();
-        this.commandPaletteKeyListener = this.createCommandPaletteKeyListener();
-    }
-
-    get id(): string {
-        return CommandPaletteTool.ID;
+        this.contextMenuMouseListener = this.createContextMenuMouseListener();
     }
 
     override get isEditTool(): boolean {
         return false;
     }
 
-    enable(): void {
-        this.toDisposeOnDisable.push(this.keyTool.registerListener(this.commandPaletteKeyListener));
+    get id(): string {
+        return ContextMenuTool.ID;
     }
 
-    protected createCommandPaletteKeyListener(): KeyListener {
-        return new CommandPaletteKeyListener();
+    override enable(): void {
+        this.toDisposeOnDisable.push(this.mouseTool.registerListener(this.contextMenuMouseListener));
+    }
+
+    protected createContextMenuMouseListener(): MouseListener {
+        return new GLSPContextMenuMouseListener();
     }
 }
