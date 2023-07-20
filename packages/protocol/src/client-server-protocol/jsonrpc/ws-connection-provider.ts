@@ -46,6 +46,7 @@ export interface GLSPConnectionHandler {
 export class GLSPWebSocketProvider {
     protected webSocket: WebSocket;
     protected reconnectTimer: NodeJS.Timer;
+    protected interruptTimer: NodeJS.Timer;
     protected reconnectAttempts = 0;
 
     protected options: GLSPWebSocketOptions = {
@@ -57,6 +58,19 @@ export class GLSPWebSocketProvider {
 
     constructor(protected url: string, options?: GLSPWebSocketOptions) {
         this.options = Object.assign(this.options, options);
+        console.error(`GLSPWebSocketProvider initialized - opts: ${JSON.stringify(this.options)}`);
+        this.interruptTimer = setInterval(() => {
+            // Allow 2 interrupts
+            if (this.reconnectAttempts === 2 || this.webSocket.readyState >= WebSocket.CLOSING) {
+                clearInterval(this.interruptTimer);
+                return;
+            }
+            console.error('GLSPWebSocketProvider interrupting the socket now...');
+            this.webSocket.close();
+            console.error(
+                `GLSPWebSocketProvider websocket ${this.webSocket.readyState === 2 ? 'CLOSING' : 'CLOSED'} ${this.webSocket.url}`
+            );
+        }, 5000);
     }
 
     protected createWebSocket(url: string): WebSocket {
@@ -69,6 +83,7 @@ export class GLSPWebSocketProvider {
         this.webSocket.onerror = (): void => {
             handler.logger?.error('GLSPWebSocketProvider Connection to server errored. Please make sure that the server is running!');
             clearInterval(this.reconnectTimer);
+            clearInterval(this.interruptTimer);
             this.webSocket.close();
         };
 
