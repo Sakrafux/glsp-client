@@ -13,28 +13,30 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { inject, injectable } from 'inversify';
 import {
     Action,
     AnchorComputerRegistry,
     CreateEdgeOperation,
-    RequestCheckEdgeAction,
+    Disposable,
     GModelElement,
+    MouseListener,
+    RequestCheckEdgeAction,
     TYPES,
     TriggerEdgeCreationAction,
     findParentByFeature,
     isConnectable,
     isCtrlOrCmd
 } from '@eclipse-glsp/sprotty';
+import { inject, injectable } from 'inversify';
 import { GLSPActionDispatcher } from '../../../base/action-dispatcher';
 import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener';
 import { CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feedback';
 import { EnableDefaultToolsAction } from '../../../base/tool-manager/tool';
+import { GEdge } from '../../../model';
 import { ITypeHintProvider } from '../../hints/type-hint-provider';
 import { BaseCreationTool } from '../base-tools';
 import { DrawFeedbackEdgeAction, RemoveFeedbackEdgeAction } from './dangling-edge-feedback';
 import { FeedbackEdgeEndMovingMouseListener } from './edge-creation-tool-feedback';
-import { GEdge } from '../../../model';
 
 /**
  * Tool to create connections in a Diagram, by selecting a source and target node.
@@ -54,18 +56,25 @@ export class EdgeCreationTool extends BaseCreationTool<TriggerEdgeCreationAction
     }
 
     doEnable(): void {
-        const mouseMovingFeedback = new FeedbackEdgeEndMovingMouseListener(this.anchorRegistry, this.feedbackDispatcher);
+        const mouseMovingFeedback = this.createEdgeEndMovingMouseListener();
+
         this.toDisposeOnDisable.push(
             mouseMovingFeedback,
-            this.mouseTool.registerListener(
-                new EdgeCreationToolMouseListener(this.triggerAction, this.actionDispatcher, this.typeHintProvider, this)
-            ),
+            this.mouseTool.registerListener(this.createEdgeCreationMouseListener()),
             this.mouseTool.registerListener(mouseMovingFeedback),
             this.registerFeedback([cursorFeedbackAction(CursorCSS.OPERATION_NOT_ALLOWED)], this, [
                 RemoveFeedbackEdgeAction.create(),
                 cursorFeedbackAction()
             ])
         );
+    }
+
+    protected createEdgeCreationMouseListener(): MouseListener {
+        return new EdgeCreationToolMouseListener(this.triggerAction, this.actionDispatcher, this.typeHintProvider, this);
+    }
+
+    protected createEdgeEndMovingMouseListener(): MouseListener & Disposable {
+        return new FeedbackEdgeEndMovingMouseListener(this.anchorRegistry, this.feedbackDispatcher);
     }
 }
 

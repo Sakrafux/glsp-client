@@ -21,6 +21,7 @@ import {
     GModelRoot,
     GNode,
     KeyListener,
+    MouseListener,
     SelectAction,
     TYPES,
     isSelectable,
@@ -30,20 +31,23 @@ import { inject, injectable, optional } from 'inversify';
 import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener';
 import { CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feedback';
 import { EnableDefaultToolsAction } from '../../../base/tool-manager/tool';
+import { GEdge } from '../../../model';
 import { getAbsolutePosition, toAbsoluteBounds } from '../../../utils/viewpoint-util';
 import { BaseEditTool } from '../base-tools';
 import { IMarqueeBehavior, MarqueeUtil } from './marquee-behavior';
 import { RemoveMarqueeAction } from './marquee-tool-feedback';
-import { GEdge } from '../../../model';
 
 @injectable()
 export class MarqueeMouseTool extends BaseEditTool {
     static ID = 'glsp.marquee-mouse-tool';
 
-    @inject(TYPES.DOMHelper) protected domHelper: DOMHelper;
-    @inject(TYPES.IMarqueeBehavior) @optional() protected marqueeBehavior: IMarqueeBehavior;
+    @inject(TYPES.DOMHelper)
+    protected domHelper: DOMHelper;
+    @inject(TYPES.IMarqueeBehavior)
+    @optional()
+    protected marqueeBehavior: IMarqueeBehavior;
 
-    protected shiftKeyListener: ShiftKeyListener = new ShiftKeyListener();
+    protected shiftKeyListener: ShiftKeyListener;
 
     get id(): string {
         return MarqueeMouseTool.ID;
@@ -51,10 +55,18 @@ export class MarqueeMouseTool extends BaseEditTool {
 
     enable(): void {
         this.toDisposeOnDisable.push(
-            this.mouseTool.registerListener(new MarqueeMouseListener(this.domHelper, this.editorContext.modelRoot, this.marqueeBehavior)),
-            this.keyTool.registerListener(this.shiftKeyListener),
+            this.mouseTool.registerListener(this.createMarqueMouseListener()),
+            this.keyTool.registerListener(this.createShiftKeyListener()),
             this.registerFeedback([cursorFeedbackAction(CursorCSS.MARQUEE)], this, [cursorFeedbackAction()])
         );
+    }
+
+    protected createMarqueMouseListener(): MouseListener {
+        return new MarqueeMouseListener(this.domHelper, this.editorContext.modelRoot, this.marqueeBehavior);
+    }
+
+    protected createShiftKeyListener(): KeyListener {
+        return new ShiftKeyListener();
     }
 }
 

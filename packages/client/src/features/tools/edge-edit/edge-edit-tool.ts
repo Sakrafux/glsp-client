@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { inject, injectable, optional } from 'inversify';
 import {
     Action,
     AnchorComputerRegistry,
@@ -21,18 +20,20 @@ import {
     Connectable,
     Disposable,
     EdgeRouterRegistry,
-    ISnapper,
-    ReconnectEdgeOperation,
     GModelElement,
     GModelRoot,
     GRoutableElement,
     GRoutingHandle,
+    ISnapper,
+    MouseListener,
+    ReconnectEdgeOperation,
     TYPES,
     canEditRouting,
     findParentByFeature,
     isConnectable,
     isSelected
 } from '@eclipse-glsp/sprotty';
+import { inject, injectable, optional } from 'inversify';
 import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener';
 import { CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feedback';
 import { ISelectionListener, SelectionService } from '../../../base/selection-service';
@@ -59,9 +60,9 @@ export class EdgeEditTool extends BaseEditTool {
     @inject(EdgeRouterRegistry) @optional() readonly edgeRouterRegistry?: EdgeRouterRegistry;
     @inject(TYPES.ISnapper) @optional() readonly snapper?: ISnapper;
 
-    protected feedbackEdgeSourceMovingListener: FeedbackEdgeSourceMovingMouseListener;
-    protected feedbackEdgeTargetMovingListener: FeedbackEdgeTargetMovingMouseListener;
-    protected feedbackMovingListener: FeedbackEdgeRouteMovingMouseListener;
+    protected feedbackEdgeSourceMovingListener: MouseListener & Disposable;
+    protected feedbackEdgeTargetMovingListener: MouseListener & Disposable;
+    protected feedbackMovingListener: MouseListener;
     protected edgeEditListener: EdgeEditListener;
 
     get id(): string {
@@ -72,9 +73,9 @@ export class EdgeEditTool extends BaseEditTool {
         this.edgeEditListener = new EdgeEditListener(this);
 
         // install feedback move mouse listener for client-side move updates
-        this.feedbackEdgeSourceMovingListener = new FeedbackEdgeSourceMovingMouseListener(this.anchorRegistry, this.feedbackDispatcher);
-        this.feedbackEdgeTargetMovingListener = new FeedbackEdgeTargetMovingMouseListener(this.anchorRegistry, this.feedbackDispatcher);
-        this.feedbackMovingListener = new FeedbackEdgeRouteMovingMouseListener(this.edgeRouterRegistry, this.snapper);
+        this.feedbackEdgeSourceMovingListener = this.createEdgeSourceMovingListener();
+        this.feedbackEdgeTargetMovingListener = this.createEdgeTargetMovingListener();
+        this.feedbackMovingListener = this.createEdgeRouteMovingListener();
 
         this.toDisposeOnDisable.push(
             Disposable.create(() => this.edgeEditListener.reset()),
@@ -83,6 +84,18 @@ export class EdgeEditTool extends BaseEditTool {
             this.feedbackEdgeTargetMovingListener,
             this.selectionService.onSelectionChanged(change => this.edgeEditListener.selectionChanged(change.root, change.selectedElements))
         );
+    }
+
+    protected createEdgeSourceMovingListener(): MouseListener & Disposable {
+        return new FeedbackEdgeSourceMovingMouseListener(this.anchorRegistry, this.feedbackDispatcher);
+    }
+
+    protected createEdgeTargetMovingListener(): MouseListener & Disposable {
+        return new FeedbackEdgeTargetMovingMouseListener(this.anchorRegistry, this.feedbackDispatcher);
+    }
+
+    protected createEdgeRouteMovingListener(): MouseListener {
+        return new FeedbackEdgeRouteMovingMouseListener(this.edgeRouterRegistry, this.snapper);
     }
 
     registerFeedbackListeners(): void {

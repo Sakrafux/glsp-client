@@ -18,6 +18,7 @@ import {
     CreateNodeOperation,
     GModelElement,
     GNode,
+    GhostElement,
     ISnapper,
     Point,
     TYPES,
@@ -55,7 +56,7 @@ export class NodeCreationTool extends BaseCreationTool<TriggerNodeCreationAction
         let trackingListener: MouseTrackingElementPositionListener | undefined;
         const ghostElement = this.triggerAction.ghostElement;
         if (ghostElement) {
-            trackingListener = new MouseTrackingElementPositionListener(getTemplateElementId(ghostElement.template), this, 'middle');
+            trackingListener = this.createMouseTrackingElementPositionListener(ghostElement);
             this.toDisposeOnDisable.push(
                 this.registerFeedback(
                     [AddTemplateElementsAction.create({ templates: [ghostElement.template], addClasses: [CSS_HIDDEN, CSS_GHOST_ELEMENT] })],
@@ -67,9 +68,17 @@ export class NodeCreationTool extends BaseCreationTool<TriggerNodeCreationAction
         }
 
         this.toDisposeOnDisable.push(
-            this.mouseTool.registerListener(new NodeCreationToolMouseListener(this.triggerAction, this, trackingListener)),
+            this.mouseTool.registerListener(this.createNodeCreationMouseListener(trackingListener)),
             this.registerFeedback([cursorFeedbackAction(CursorCSS.NODE_CREATION)], this, [cursorFeedbackAction()])
         );
+    }
+
+    protected createNodeCreationMouseListener(mouseTrackingListener?: MouseTrackingElementPositionListener): NodeCreationToolMouseListener {
+        return new NodeCreationToolMouseListener(this.triggerAction, this, mouseTrackingListener);
+    }
+
+    protected createMouseTrackingElementPositionListener(ghostElement: GhostElement): MouseTrackingElementPositionListener {
+        return new MouseTrackingElementPositionListener(getTemplateElementId(ghostElement.template), this, 'middle');
     }
 }
 
