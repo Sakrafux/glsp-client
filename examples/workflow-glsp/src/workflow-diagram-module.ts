@@ -50,6 +50,7 @@ import 'sprotty/css/edit-label.css';
 import '../css/diagram.css';
 import { directTaskEditor } from './direct-task-editing/di.config';
 import { ActivityNode, CategoryNode, Icon, TaskNode, WeightedEdge } from './model';
+import { testModule } from './test-module';
 import { IconView, WorkflowEdgeView } from './workflow-views';
 
 export const workflowDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
@@ -98,5 +99,12 @@ export function createWorkflowDiagramContainer(...containerConfiguration: Contai
 }
 
 export function initializeWorkflowDiagramContainer(container: Container, ...containerConfiguration: ContainerConfiguration): Container {
-    return initializeDiagramContainer(container, workflowDiagramModule, directTaskEditor, helperLineModule, ...containerConfiguration);
+    return initializeDiagramContainer(
+        container,
+        testModule,
+        workflowDiagramModule,
+        directTaskEditor,
+        helperLineModule,
+        ...containerConfiguration
+    );
 }
